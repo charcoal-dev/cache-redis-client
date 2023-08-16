@@ -1,0 +1,27 @@
+{
+  "name": "charcoal-dev/cache-redis-client",
+  "description": "Redis Client for Charcoal Cache lib",
+  "type": "library",
+  "homepage": "https://github.com/charcoal-dev/cache-redis-client",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Furqan A. Siddiqui",
+      "email": "hello@furqansiddiqui.com",
+      "homepage": "https://www.furqansiddiqui.com",
+      "role": "Author"
+    }
+  ],
+  "require": {
+    "php": "^8.1",
+    "charcoal-dev/cache": "dev-main"
+  },
+  "autoload": {
+    "psr-4": {
+      "Charcoal\\Cache\\Drivers\\": [
+        "src"
+      ]
+    }
+  },
+  "minimum-stability": "dev"
+}
