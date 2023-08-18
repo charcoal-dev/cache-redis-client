@@ -143,6 +143,14 @@ class RedisClient implements CacheDriverInterface
     }
 
     /**
+     * @return string
+     */
+    public function metaUniqueId(): string
+    {
+        return "redis_" . md5($this->hostname . ":" . $this->port);
+    }
+
+    /**
      * @return bool
      */
     public function metaPingSupported(): bool
