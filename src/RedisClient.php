@@ -35,7 +35,7 @@ class RedisClient implements CacheDriverInterface
      */
     public function __construct(
         public readonly string $hostname,
-        public readonly int    $port,
+        public readonly int    $port = 6379,
         public readonly int    $timeOut = 1
     )
     {
