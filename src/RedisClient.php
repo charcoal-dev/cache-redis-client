@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Charcoal\Cache\Drivers;
 
+use Charcoal\Cache\Cache;
 use Charcoal\Cache\CacheDriverInterface;
 use Charcoal\Cache\Drivers\Exception\RedisConnectionException;
 use Charcoal\Cache\Drivers\Exception\RedisOpException;
@@ -25,6 +26,8 @@ use Charcoal\Cache\Exception\CacheDriverException;
  */
 class RedisClient implements CacheDriverInterface
 {
+    /** @var \Charcoal\Cache\Cache|null */
+    private ?Cache $cache = null;
     /** @var null|resource */
     private $sock = null;
 
@@ -39,6 +42,15 @@ class RedisClient implements CacheDriverInterface
         public readonly int    $timeOut = 1
     )
     {
+    }
+
+    /**
+     * @param \Charcoal\Cache\Cache $cache
+     * @return void
+     */
+    public function createLink(Cache $cache): void
+    {
+        $this->cache = $cache;
     }
 
     /**
@@ -82,11 +94,13 @@ class RedisClient implements CacheDriverInterface
         $this->port = $data["port"];
         $this->timeOut = $data["timeOut"];
         $this->sock = null;
+        $this->cache = null;
     }
 
     /**
      * @return void
      * @throws \Charcoal\Cache\Drivers\Exception\RedisConnectionException
+     * @throws \Throwable
      */
     public function connect(): void
     {
@@ -107,10 +121,14 @@ class RedisClient implements CacheDriverInterface
 
         $this->sock = $socket;
         stream_set_timeout($this->sock, $this->timeOut);
+
+        // Event trigger
+        $this->cache->events->onConnected()->trigger([$this]);
     }
 
     /**
      * @return void
+     * @throws \Throwable
      */
     public function disconnect(): void
     {
@@ -122,6 +140,9 @@ class RedisClient implements CacheDriverInterface
         }
 
         $this->sock = null;
+
+        // Event trigger
+        $this->cache->events->onDisconnect()->trigger([$this]);
     }
 
     /**
@@ -160,8 +181,9 @@ class RedisClient implements CacheDriverInterface
 
     /**
      * @return bool
-     * @throws RedisConnectionException
-     * @throws RedisOpException
+     * @throws \Charcoal\Cache\Drivers\Exception\RedisConnectionException
+     * @throws \Charcoal\Cache\Drivers\Exception\RedisOpException
+     * @throws \Throwable
      */
     public function ping(): bool
     {
@@ -183,8 +205,9 @@ class RedisClient implements CacheDriverInterface
      * @param int|string $value
      * @param int|null $ttl
      * @return void
-     * @throws RedisConnectionException
-     * @throws RedisOpException
+     * @throws \Charcoal\Cache\Drivers\Exception\RedisConnectionException
+     * @throws \Charcoal\Cache\Drivers\Exception\RedisOpException
+     * @throws \Throwable
      */
     public function store(string $key, int|string $value, ?int $ttl = null): void
     {
@@ -201,8 +224,9 @@ class RedisClient implements CacheDriverInterface
     /**
      * @param string $key
      * @return int|string|bool|null
-     * @throws RedisConnectionException
-     * @throws RedisOpException
+     * @throws \Charcoal\Cache\Drivers\Exception\RedisConnectionException
+     * @throws \Charcoal\Cache\Drivers\Exception\RedisOpException
+     * @throws \Throwable
      */
     public function resolve(string $key): int|string|null|bool
     {
@@ -212,8 +236,9 @@ class RedisClient implements CacheDriverInterface
     /**
      * @param string $key
      * @return bool
-     * @throws RedisConnectionException
-     * @throws RedisOpException
+     * @throws \Charcoal\Cache\Drivers\Exception\RedisConnectionException
+     * @throws \Charcoal\Cache\Drivers\Exception\RedisOpException
+     * @throws \Throwable
      */
     public function isStored(string $key): bool
     {
@@ -223,8 +248,9 @@ class RedisClient implements CacheDriverInterface
     /**
      * @param string $key
      * @return bool
-     * @throws RedisConnectionException
-     * @throws RedisOpException
+     * @throws \Charcoal\Cache\Drivers\Exception\RedisConnectionException
+     * @throws \Charcoal\Cache\Drivers\Exception\RedisOpException
+     * @throws \Throwable
      */
     public function delete(string $key): bool
     {
@@ -233,8 +259,9 @@ class RedisClient implements CacheDriverInterface
 
     /**
      * @return bool
-     * @throws RedisConnectionException
-     * @throws RedisOpException
+     * @throws \Charcoal\Cache\Drivers\Exception\RedisConnectionException
+     * @throws \Charcoal\Cache\Drivers\Exception\RedisOpException
+     * @throws \Throwable
      */
     public function truncate(): bool
     {
@@ -261,6 +288,7 @@ class RedisClient implements CacheDriverInterface
      * @return int|string|bool|null
      * @throws \Charcoal\Cache\Drivers\Exception\RedisConnectionException
      * @throws \Charcoal\Cache\Drivers\Exception\RedisOpException
+     * @throws \Throwable
      */
     private function send(string $command): int|string|null|bool
     {
