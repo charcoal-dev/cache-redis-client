@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace Charcoal\Cache\Drivers\Exceptions;
 
-use Charcoal\Cache\Exception\CacheDriverConnectionException;
+use Charcoal\Cache\Exceptions\CacheDriverConnectionException;
 
 /**
  * Class RedisConnectionException

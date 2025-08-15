@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace Charcoal\Cache\Drivers\Exceptions;
 
-use Charcoal\Cache\Exception\CacheDriverOpException;
+use Charcoal\Cache\Exceptions\CacheDriverOpException;
 
 /**
  * Class RedisOpException

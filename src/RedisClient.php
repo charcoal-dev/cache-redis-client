@@ -15,7 +15,7 @@ use Charcoal\Cache\Drivers\Exceptions\RedisOpException;
 use Charcoal\Cache\Events\Connection\ConnectionError;
 use Charcoal\Cache\Events\Connection\ConnectionSuccess;
 use Charcoal\Cache\Events\ConnectionEvent;
-use Charcoal\Cache\Exception\CacheDriverException;
+use Charcoal\Cache\Exceptions\CacheDriverException;
 
 /**
  * Class RedisClient
