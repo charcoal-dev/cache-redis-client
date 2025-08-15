@@ -10,8 +10,8 @@ namespace Charcoal\Cache\Drivers;
 
 use Charcoal\Cache\CacheClient;
 use Charcoal\Cache\Contracts\CacheDriverInterface;
-use Charcoal\Cache\Drivers\Exception\RedisConnectionException;
-use Charcoal\Cache\Drivers\Exception\RedisOpException;
+use Charcoal\Cache\Drivers\Exceptions\RedisConnectionException;
+use Charcoal\Cache\Drivers\Exceptions\RedisOpException;
 use Charcoal\Cache\Events\Connection\ConnectionError;
 use Charcoal\Cache\Events\Connection\ConnectionSuccess;
 use Charcoal\Cache\Events\ConnectionEvent;
