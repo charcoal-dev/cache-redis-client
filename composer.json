@@ -14,7 +14,7 @@
   ],
   "require": {
     "php": "^8.3",
-    "charcoal-dev/cache": "^0.2.0"
+    "charcoal-dev/cache": "^0.2.2"
   },
   "autoload": {
     "psr-4": {

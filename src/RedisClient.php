@@ -12,6 +12,9 @@ use Charcoal\Cache\CacheClient;
 use Charcoal\Cache\Contracts\CacheDriverInterface;
 use Charcoal\Cache\Drivers\Exception\RedisConnectionException;
 use Charcoal\Cache\Drivers\Exception\RedisOpException;
+use Charcoal\Cache\Events\Connection\ConnectionError;
+use Charcoal\Cache\Events\Connection\ConnectionSuccess;
+use Charcoal\Cache\Events\ConnectionEvent;
 use Charcoal\Cache\Exception\CacheDriverException;
 
 /**
@@ -98,7 +101,7 @@ class RedisClient implements CacheDriverInterface
         $this->sock = $socket;
         stream_set_timeout($this->sock, $this->timeOut);
 
-        $this->cache->events->onConnected()->trigger([$this]);
+        ConnectionEvent::getEvent($this->cache)->dispatch(new ConnectionSuccess($this));
     }
 
     /**
@@ -116,7 +119,7 @@ class RedisClient implements CacheDriverInterface
         $this->sock = null;
 
         // Event trigger
-        $this->cache->events->onDisconnect()->trigger([$this]);
+        ConnectionEvent::getEvent($this->cache)->dispatch(new ConnectionError($this));
     }
 
     /**
