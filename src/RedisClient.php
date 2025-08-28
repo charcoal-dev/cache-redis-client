@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace Charcoal\Cache\Drivers;
 
+use Charcoal\Base\Traits\NotCloneableTrait;
+use Charcoal\Base\Traits\NotSerializableTrait;
 use Charcoal\Cache\CacheClient;
 use Charcoal\Cache\Contracts\CacheDriverInterface;
 use Charcoal\Cache\Drivers\Exceptions\RedisConnectionException;
@@ -23,6 +25,9 @@ use Charcoal\Cache\Exceptions\CacheDriverException;
  */
 class RedisClient implements CacheDriverInterface
 {
+    use NotSerializableTrait;
+    use NotCloneableTrait;
+
     private ?CacheClient $cache = null;
     /** @var resource|null $sock */
     private $sock = null;
