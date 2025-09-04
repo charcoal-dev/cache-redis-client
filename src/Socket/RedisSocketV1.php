@@ -18,7 +18,7 @@ use Charcoal\Contracts\Storage\Cache\CacheAdapterInterface;
  * A client for interacting with a Redis server, providing methods to connect,
  * execute commands, and manage data within the Redis store.
  */
-final class RedisClientV1 implements CacheAdapterInterface
+final class RedisSocketV1 implements CacheAdapterInterface
 {
     use RedisSocketTrait;
 
