@@ -94,6 +94,20 @@ final class RedisClientV1 implements CacheAdapterInterface
     }
 
     /**
+     * @return void
+     */
+    public function disconnect(): void
+    {
+        if ($this->isConnected()) {
+            try {
+                $this->send("QUIT");
+            } catch (\Throwable) {
+            }
+        }
+        $this->sock = null;
+    }
+
+    /**
      * @param string $command
      * @return string
      */

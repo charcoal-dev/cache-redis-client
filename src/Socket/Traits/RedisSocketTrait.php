@@ -13,16 +13,13 @@ use Charcoal\Contracts\Storage\Cache\CacheClientInterface;
 
 /**
  * Trait RedisSocketTrait
+ * Provides common methods for managing a Redis socket connection.
  */
 trait RedisSocketTrait
 {
     private mixed $sock = null;
+    protected ?CacheClientInterface $cacheClient = null;
 
-    /**
-     * @param string $hostname
-     * @param int $port
-     * @param int $timeOut
-     */
     public function __construct(
         public readonly string $hostname,
         public readonly int    $port = 6379,
@@ -31,37 +28,25 @@ trait RedisSocketTrait
     {
     }
 
-    /**
-     * @param CacheClientInterface $cache
-     * @return void
-     */
     public function createLink(CacheClientInterface $cache): void
     {
+        $this->cacheClient = $cache;
     }
 
-    /**
-     * @return array
-     */
     public function __debugInfo(): array
     {
         return [
-            get_called_class(),
+            static::class,
             $this->hostname,
             $this->port,
         ];
     }
 
-    /**
-     * @return void
-     */
-    public function __clone()
+    public function __clone(): void
     {
         $this->sock = null;
     }
 
-    /**
-     * @return array
-     */
     public function __serialize(): array
     {
         return [
@@ -71,35 +56,29 @@ trait RedisSocketTrait
         ];
     }
 
-    /**
-     * @param array $data
-     * @return void
-     */
     public function __unserialize(array $data): void
     {
         $this->hostname = $data["hostname"];
         $this->port = $data["port"];
         $this->timeOut = $data["timeOut"];
         $this->sock = null;
+        $this->cacheClient = null;
     }
 
     /**
-     * @return void
      * @throws RedisConnectionException
      */
     public function connect(): void
     {
-        // Establish connection
         $errorNum = 0;
         $errorMsg = "";
-        $socket = stream_socket_client(
+        $socket = @stream_socket_client(
             "tcp://" . $this->hostname . ":" . $this->port,
             $errorNum,
             $errorMsg,
             $this->timeOut
         );
 
-        // Connected?
         if (!is_resource($socket)) {
             throw new RedisConnectionException($errorMsg, $errorNum);
         }
@@ -108,24 +87,6 @@ trait RedisSocketTrait
         stream_set_timeout($this->sock, $this->timeOut);
     }
 
-    /**
-     * @return void
-     */
-    public function disconnect(): void
-    {
-        if ($this->isConnected()) {
-            try {
-                $this->send("QUIT");
-            } catch (\Exception) {
-            }
-        }
-
-        $this->sock = null;
-    }
-
-    /**
-     * @return bool
-     */
     public function isConnected(): bool
     {
         if ($this->sock) {
@@ -134,24 +95,16 @@ trait RedisSocketTrait
                 $this->sock = null;
                 return false;
             }
-
             return true;
         }
-
         return false;
     }
 
-    /**
-     * @return string
-     */
     public function getId(): string
     {
         return "redis_" . md5($this->hostname . ":" . $this->port);
     }
 
-    /**
-     * @return bool
-     */
     public function supportsPing(): bool
     {
         return true;
