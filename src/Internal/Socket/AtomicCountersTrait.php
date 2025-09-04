@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Charcoal\Cache\Adapters\Redis\Socket\Traits;
+namespace Charcoal\Cache\Adapters\Redis\Internal\Socket;
 
 use Charcoal\Cache\Adapters\Redis\Exceptions\RedisConnectionException;
 use Charcoal\Cache\Adapters\Redis\Exceptions\RedisOpException;
@@ -14,6 +14,7 @@ use Charcoal\Cache\Adapters\Redis\Exceptions\RedisOpException;
 /**
  * Trait AtomicCountersTrait
  * Provides methods for atomic counter operations.
+ * @internal
  */
 trait AtomicCountersTrait
 {

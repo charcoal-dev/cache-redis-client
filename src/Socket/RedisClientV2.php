@@ -10,10 +10,10 @@ namespace Charcoal\Cache\Adapters\Redis\Socket;
 
 use Charcoal\Cache\Adapters\Redis\Exceptions\RedisConnectionException;
 use Charcoal\Cache\Adapters\Redis\Exceptions\RedisOpException;
-use Charcoal\Cache\Adapters\Redis\Socket\Traits\AtomicCountersTrait;
-use Charcoal\Cache\Adapters\Redis\Socket\Traits\ExpirableKeysTrait;
-use Charcoal\Cache\Adapters\Redis\Socket\Traits\LocksTrait;
-use Charcoal\Cache\Adapters\Redis\Socket\Traits\RedisSocketTrait;
+use Charcoal\Cache\Adapters\Redis\Internal\Socket\AtomicCountersTrait;
+use Charcoal\Cache\Adapters\Redis\Internal\Socket\ExpirableKeysTrait;
+use Charcoal\Cache\Adapters\Redis\Internal\Socket\LocksTrait;
+use Charcoal\Cache\Adapters\Redis\Internal\Socket\RedisSocketTrait;
 use Charcoal\Contracts\Storage\Cache\Adapter\AtomicCountersInterface;
 use Charcoal\Contracts\Storage\Cache\Adapter\ExpirableKeysInterface;
 use Charcoal\Contracts\Storage\Cache\Adapter\LocksInterface;
@@ -53,8 +53,8 @@ final class RedisClientV2 implements
             throw new RedisConnectionException($errorMsg, $errorNum);
         }
 
-        $this->sock = $socket;
-        stream_set_timeout($this->sock, $this->timeOut);
+        $this->backend = $socket;
+        stream_set_timeout($this->backend, $this->timeOut);
     }
 
     /**
@@ -137,7 +137,7 @@ final class RedisClientV2 implements
             } catch (\Throwable) {
             }
         }
-        $this->sock = null;
+        $this->backend = null;
     }
 
     /**
@@ -155,7 +155,7 @@ final class RedisClientV2 implements
         $len = strlen($buf);
         $written = 0;
         while ($written < $len) {
-            $n = @fwrite($this->sock, substr($buf, $written));
+            $n = @fwrite($this->backend, substr($buf, $written));
             if ($n === false || $n === 0) {
                 throw new RedisConnectionException("Failed to write to Redis socket");
             }
@@ -168,9 +168,9 @@ final class RedisClientV2 implements
      */
     private function readLine(): string
     {
-        $line = fgets($this->sock);
+        $line = fgets($this->backend);
         if ($line === false) {
-            $meta = @stream_get_meta_data($this->sock);
+            $meta = @stream_get_meta_data($this->backend);
             if (($meta["timed_out"] ?? false) === true) {
                 throw new RedisOpException("Redis stream has timed out");
             }
@@ -186,7 +186,7 @@ final class RedisClientV2 implements
     {
         $buf = "";
         while ($n > 0) {
-            $chunk = @stream_get_contents($this->sock, $n);
+            $chunk = @stream_get_contents($this->backend, $n);
             if ($chunk === false || $chunk === "") {
                 throw new RedisOpException("Failed to read bulk response bytes");
             }
@@ -202,7 +202,7 @@ final class RedisClientV2 implements
      */
     private function sendArgs(string ...$args): int|string|null|bool
     {
-        if (!$this->sock) {
+        if (!$this->backend) {
             $this->connect();
         }
 

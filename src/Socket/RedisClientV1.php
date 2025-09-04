@@ -10,7 +10,7 @@ namespace Charcoal\Cache\Adapters\Redis\Socket;
 
 use Charcoal\Cache\Adapters\Redis\Exceptions\RedisConnectionException;
 use Charcoal\Cache\Adapters\Redis\Exceptions\RedisOpException;
-use Charcoal\Cache\Adapters\Redis\Socket\Traits\RedisSocketTrait;
+use Charcoal\Cache\Adapters\Redis\Internal\Socket\RedisSocketTrait;
 use Charcoal\Contracts\Storage\Cache\CacheAdapterInterface;
 
 /**
@@ -104,7 +104,7 @@ final class RedisClientV1 implements CacheAdapterInterface
             } catch (\Throwable) {
             }
         }
-        $this->sock = null;
+        $this->backend = null;
     }
 
     /**
@@ -128,17 +128,17 @@ final class RedisClientV1 implements CacheAdapterInterface
      */
     private function send(string $command): int|string|null|bool
     {
-        if (!$this->sock) {
+        if (!$this->backend) {
             $this->connect();
         }
 
         $command = trim($command);
         if (strtolower($command) == "disconnect") {
-            return @fclose($this->sock);
+            return @fclose($this->backend);
         }
 
         error_clear_last();
-        $write = @fwrite($this->sock, $this->prepareCommand($command));
+        $write = @fwrite($this->backend, $this->prepareCommand($command));
         if ($write === false) {
             throw new RedisConnectionException(sprintf('Failed to send "%1$s" command', explode(" ", $command)[0]));
         }
@@ -152,9 +152,9 @@ final class RedisClientV1 implements CacheAdapterInterface
     private function response(): int|string|null
     {
         // Get response from stream
-        $response = fgets($this->sock);
+        $response = fgets($this->backend);
         if (!is_string($response)) {
-            $timedOut = @stream_get_meta_data($this->sock)["timed_out"] ?? null;
+            $timedOut = @stream_get_meta_data($this->backend)["timed_out"] ?? null;
             if ($timedOut === true) {
                 throw new RedisOpException('Redis stream has timed out');
             }
@@ -178,7 +178,7 @@ final class RedisClientV1 implements CacheAdapterInterface
             case "$": // Bulk String
                 $bytes = intval($data);
                 if ($bytes > 0) {
-                    $data = stream_get_contents($this->sock, $bytes + 2);
+                    $data = stream_get_contents($this->backend, $bytes + 2);
                     if (!is_string($data)) {
                         throw new RedisOpException('Failed to read REDIS bulk-string response');
                     }

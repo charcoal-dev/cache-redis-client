@@ -6,11 +6,15 @@
 
 declare(strict_types=1);
 
-namespace Charcoal\Cache\Adapters\Redis\Socket\Traits;
+namespace Charcoal\Cache\Adapters\Redis\Internal\Socket;
 
 use Charcoal\Cache\Adapters\Redis\Exceptions\RedisConnectionException;
 use Charcoal\Cache\Adapters\Redis\Exceptions\RedisOpException;
 
+/**
+ * Provides a set of functionalities to manage distributed locks using Redis.
+ * @internal
+ */
 trait LocksTrait
 {
     /**
@@ -26,6 +30,7 @@ trait LocksTrait
         if ($r === null) {
             return false;
         }
+
         throw new RedisOpException("Unexpected SET NX reply");
     }
 
