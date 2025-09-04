@@ -8,26 +8,19 @@ declare(strict_types=1);
 
 namespace Charcoal\Cache\Adapters\Redis\Socket;
 
-use Charcoal\Base\Objects\Traits\NotCloneableTrait;
-use Charcoal\Base\Objects\Traits\NotSerializableTrait;
-use Charcoal\Base\Support\ErrorHelper;
 use Charcoal\Cache\Adapters\Redis\Exceptions\RedisConnectionException;
 use Charcoal\Cache\Adapters\Redis\Exceptions\RedisOpException;
 use Charcoal\Contracts\Storage\Cache\CacheAdapterInterface;
 use Charcoal\Contracts\Storage\Cache\CacheClientInterface;
 
 /**
- * RedisClient is responsible for handling communication with a Redis server.
- * It implements the CacheDriverInterface which provides functionality for caching operations.
+ * Class RedisClientV1
+ * A client for interacting with a Redis server, providing methods to connect,
+ * execute commands, and manage data within the Redis store.
  */
 class RedisClientV1 implements CacheAdapterInterface
 {
-    use NotSerializableTrait;
-    use NotCloneableTrait;
-
-    private ?CacheClientInterface $cacheClient = null;
-    /** @var resource|null $sock */
-    private $sock = null;
+    private mixed $sock = null;
 
     /**
      * @param string $hostname
@@ -48,7 +41,6 @@ class RedisClientV1 implements CacheAdapterInterface
      */
     public function createLink(CacheClientInterface $cache): void
     {
-        $this->cacheClient = $cache;
     }
 
     /**
@@ -61,6 +53,14 @@ class RedisClientV1 implements CacheAdapterInterface
             $this->hostname,
             $this->port,
         ];
+    }
+
+    /**
+     * @return void
+     */
+    public function __clone()
+    {
+        $this->sock = null;
     }
 
     /**
@@ -85,7 +85,6 @@ class RedisClientV1 implements CacheAdapterInterface
         $this->port = $data["port"];
         $this->timeOut = $data["timeOut"];
         $this->sock = null;
-        $this->cacheClient = null;
     }
 
     /**
@@ -98,7 +97,7 @@ class RedisClientV1 implements CacheAdapterInterface
         $errorNum = 0;
         $errorMsg = "";
         $socket = stream_socket_client(
-            sprintf('%s:%d', $this->hostname, $this->port),
+            "tcp://" . $this->hostname . ":" . $this->port,
             $errorNum,
             $errorMsg,
             $this->timeOut
@@ -271,8 +270,7 @@ class RedisClientV1 implements CacheAdapterInterface
         error_clear_last();
         $write = @fwrite($this->sock, $this->prepareCommand($command));
         if ($write === false) {
-            throw new RedisConnectionException(sprintf('Failed to send "%1$s" command', explode(" ", $command)[0]),
-                previous: ErrorHelper::lastErrorToRuntimeException());
+            throw new RedisConnectionException(sprintf('Failed to send "%1$s" command', explode(" ", $command)[0]));
         }
 
         return $this->response();
