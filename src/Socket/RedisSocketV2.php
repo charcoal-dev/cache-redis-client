@@ -202,9 +202,7 @@ final class RedisSocketV2 implements
      */
     private function sendArgs(string ...$args): int|string|null|bool
     {
-        if (!$this->backend) {
-            $this->connect();
-        }
+        $this->ensure();
 
         $this->writeCommand($args);
 

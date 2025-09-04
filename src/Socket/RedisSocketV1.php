@@ -128,9 +128,7 @@ final class RedisSocketV1 implements CacheAdapterInterface
      */
     private function send(string $command): int|string|null|bool
     {
-        if (!$this->backend) {
-            $this->connect();
-        }
+        $this->ensure();
 
         $command = trim($command);
         if (strtolower($command) == "disconnect") {

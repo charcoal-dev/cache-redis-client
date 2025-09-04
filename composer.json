@@ -16,6 +16,9 @@
     "php": "^8.3",
     "charcoal-dev/contracts-storage": "dev-main"
   },
+  "suggest": {
+    "ext-redis": "For the high-performance Redis adapter"
+  },
   "autoload": {
     "psr-4": {
       "Charcoal\\Cache\\Adapters\\Redis\\": [
