@@ -11,7 +11,7 @@ namespace Charcoal\Cache\Adapters\Redis\Exceptions;
 /**
  * Exception class for handling errors related to Redis connection.
  */
-class RedisConnectionException extends \RuntimeException
+class RedisConnectionException extends \Exception
 {
 }
 
