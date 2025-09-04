@@ -23,7 +23,7 @@ final class RedisClientV1 implements CacheAdapterInterface
     use RedisSocketTrait;
 
     /**
-     * @return bool
+     * @throws RedisConnectionException
      * @throws RedisOpException
      */
     public function ping(): bool
@@ -42,10 +42,7 @@ final class RedisClientV1 implements CacheAdapterInterface
     }
 
     /**
-     * @param string $key
-     * @param int|string $value
-     * @param int|null $ttl
-     * @return void
+     * @throws RedisConnectionException
      * @throws RedisOpException
      */
     public function set(string $key, int|string $value, ?int $ttl = null): void
@@ -61,8 +58,7 @@ final class RedisClientV1 implements CacheAdapterInterface
     }
 
     /**
-     * @param string $key
-     * @return int|string|bool|null
+     * @throws RedisConnectionException
      * @throws RedisOpException
      */
     public function get(string $key): int|string|null|bool
@@ -71,8 +67,7 @@ final class RedisClientV1 implements CacheAdapterInterface
     }
 
     /**
-     * @param string $key
-     * @return bool
+     * @throws RedisConnectionException
      * @throws RedisOpException
      */
     public function has(string $key): bool
@@ -81,8 +76,7 @@ final class RedisClientV1 implements CacheAdapterInterface
     }
 
     /**
-     * @param string $key
-     * @return bool
+     * @throws RedisConnectionException
      * @throws RedisOpException
      */
     public function delete(string $key): bool
@@ -91,7 +85,7 @@ final class RedisClientV1 implements CacheAdapterInterface
     }
 
     /**
-     * @return bool
+     * @throws RedisConnectionException
      * @throws RedisOpException
      */
     public function truncate(): bool
@@ -115,6 +109,7 @@ final class RedisClientV1 implements CacheAdapterInterface
     }
 
     /**
+     * @throws RedisConnectionException
      * @throws RedisOpException
      */
     private function send(string $command): int|string|null|bool
