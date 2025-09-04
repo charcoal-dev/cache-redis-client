@@ -6,15 +6,12 @@
 
 declare(strict_types=1);
 
-namespace Charcoal\Cache\Drivers\Exceptions;
-
-use Charcoal\Cache\Exceptions\CacheDriverConnectionException;
+namespace Charcoal\Cache\Adapters\Redis\Exceptions;
 
 /**
- * Class RedisConnectionException
- * @package Charcoal\Cache\Drivers\Exceptions
+ * Exception class for handling errors related to Redis connection.
  */
-class RedisConnectionException extends CacheDriverConnectionException
+class RedisConnectionException extends \RuntimeException
 {
 }
 

@@ -6,29 +6,26 @@
 
 declare(strict_types=1);
 
-namespace Charcoal\Cache\Drivers;
+namespace Charcoal\Cache\Adapters\Redis\Socket;
 
-use Charcoal\Base\Traits\NotCloneableTrait;
-use Charcoal\Base\Traits\NotSerializableTrait;
-use Charcoal\Cache\CacheClient;
-use Charcoal\Cache\Contracts\CacheDriverInterface;
-use Charcoal\Cache\Drivers\Exceptions\RedisConnectionException;
-use Charcoal\Cache\Drivers\Exceptions\RedisOpException;
-use Charcoal\Cache\Events\Connection\ConnectionError;
-use Charcoal\Cache\Events\Connection\ConnectionSuccess;
-use Charcoal\Cache\Events\ConnectionEvent;
-use Charcoal\Cache\Exceptions\CacheDriverException;
+use Charcoal\Base\Objects\Traits\NotCloneableTrait;
+use Charcoal\Base\Objects\Traits\NotSerializableTrait;
+use Charcoal\Base\Support\ErrorHelper;
+use Charcoal\Cache\Adapters\Redis\Exceptions\RedisConnectionException;
+use Charcoal\Cache\Adapters\Redis\Exceptions\RedisOpException;
+use Charcoal\Contracts\Storage\Cache\CacheAdapterInterface;
+use Charcoal\Contracts\Storage\Cache\CacheClientInterface;
 
 /**
- * Class RedisClient
- * @package Charcoal\Cache\Drivers
+ * RedisClient is responsible for handling communication with a Redis server.
+ * It implements the CacheDriverInterface which provides functionality for caching operations.
  */
-class RedisClient implements CacheDriverInterface
+class RedisClientV1 implements CacheAdapterInterface
 {
     use NotSerializableTrait;
     use NotCloneableTrait;
 
-    private ?CacheClient $cache = null;
+    private ?CacheClientInterface $cacheClient = null;
     /** @var resource|null $sock */
     private $sock = null;
 
@@ -45,11 +42,18 @@ class RedisClient implements CacheDriverInterface
     {
     }
 
-    public function createLink(CacheClient $cache): void
+    /**
+     * @param CacheClientInterface $cache
+     * @return void
+     */
+    public function createLink(CacheClientInterface $cache): void
     {
-        $this->cache = $cache;
+        $this->cacheClient = $cache;
     }
 
+    /**
+     * @return array
+     */
     public function __debugInfo(): array
     {
         return [
@@ -59,11 +63,9 @@ class RedisClient implements CacheDriverInterface
         ];
     }
 
-    public function __clone(): void
-    {
-        $this->sock = null;
-    }
-
+    /**
+     * @return array
+     */
     public function __serialize(): array
     {
         return [
@@ -73,18 +75,22 @@ class RedisClient implements CacheDriverInterface
         ];
     }
 
+    /**
+     * @param array $data
+     * @return void
+     */
     public function __unserialize(array $data): void
     {
         $this->hostname = $data["hostname"];
         $this->port = $data["port"];
         $this->timeOut = $data["timeOut"];
         $this->sock = null;
-        $this->cache = null;
+        $this->cacheClient = null;
     }
 
     /**
+     * @return void
      * @throws RedisConnectionException
-     * @throws \Throwable
      */
     public function connect(): void
     {
@@ -105,26 +111,21 @@ class RedisClient implements CacheDriverInterface
 
         $this->sock = $socket;
         stream_set_timeout($this->sock, $this->timeOut);
-
-        ConnectionEvent::getEvent($this->cache)->dispatch(new ConnectionSuccess($this));
     }
 
     /**
-     * @throws \Throwable
+     * @return void
      */
     public function disconnect(): void
     {
         if ($this->isConnected()) {
             try {
                 $this->send("QUIT");
-            } catch (CacheDriverException) {
+            } catch (\Exception) {
             }
         }
 
         $this->sock = null;
-
-        // Event trigger
-        ConnectionEvent::getEvent($this->cache)->dispatch(new ConnectionError($this));
     }
 
     /**
@@ -148,7 +149,7 @@ class RedisClient implements CacheDriverInterface
     /**
      * @return string
      */
-    public function metaUniqueId(): string
+    public function getId(): string
     {
         return "redis_" . md5($this->hostname . ":" . $this->port);
     }
@@ -156,16 +157,14 @@ class RedisClient implements CacheDriverInterface
     /**
      * @return bool
      */
-    public function metaPingSupported(): bool
+    public function supportsPing(): bool
     {
         return true;
     }
 
     /**
      * @return bool
-     * @throws RedisConnectionException
      * @throws RedisOpException
-     * @throws \Throwable
      */
     public function ping(): bool
     {
@@ -183,11 +182,13 @@ class RedisClient implements CacheDriverInterface
     }
 
     /**
-     * @throws RedisConnectionException
+     * @param string $key
+     * @param int|string $value
+     * @param int|null $ttl
+     * @return void
      * @throws RedisOpException
-     * @throws \Throwable
      */
-    public function store(string $key, int|string $value, ?int $ttl = null): void
+    public function set(string $key, int|string $value, ?int $ttl = null): void
     {
         $query = is_int($ttl) && $ttl > 0 ?
             sprintf('SETEX %s %d "%s"', $key, $ttl, $value) :
@@ -200,29 +201,29 @@ class RedisClient implements CacheDriverInterface
     }
 
     /**
-     * @throws RedisConnectionException
+     * @param string $key
+     * @return int|string|bool|null
      * @throws RedisOpException
-     * @throws \Throwable
      */
-    public function resolve(string $key): int|string|null|bool
+    public function get(string $key): int|string|null|bool
     {
         return $this->send(sprintf('GET %s', $key));
     }
 
     /**
-     * @throws RedisConnectionException
+     * @param string $key
+     * @return bool
      * @throws RedisOpException
-     * @throws \Throwable
      */
-    public function isStored(string $key): bool
+    public function has(string $key): bool
     {
         return $this->send(sprintf('EXISTS %s', $key)) === 1;
     }
 
     /**
-     * @throws RedisConnectionException
+     * @param string $key
+     * @return bool
      * @throws RedisOpException
-     * @throws \Throwable
      */
     public function delete(string $key): bool
     {
@@ -230,15 +231,18 @@ class RedisClient implements CacheDriverInterface
     }
 
     /**
-     * @throws RedisConnectionException
+     * @return bool
      * @throws RedisOpException
-     * @throws \Throwable
      */
     public function truncate(): bool
     {
         return (bool)$this->send('FLUSHALL');
     }
 
+    /**
+     * @param string $command
+     * @return string
+     */
     private function prepareCommand(string $command): string
     {
         $parts = str_getcsv($command, " ", '"');
@@ -251,9 +255,7 @@ class RedisClient implements CacheDriverInterface
     }
 
     /**
-     * @throws RedisConnectionException
      * @throws RedisOpException
-     * @throws \Throwable
      */
     private function send(string $command): int|string|null|bool
     {
@@ -266,9 +268,11 @@ class RedisClient implements CacheDriverInterface
             return @fclose($this->sock);
         }
 
-        $write = fwrite($this->sock, $this->prepareCommand($command));
+        error_clear_last();
+        $write = @fwrite($this->sock, $this->prepareCommand($command));
         if ($write === false) {
-            throw new RedisOpException(sprintf('Failed to send "%1$s" command', explode(" ", $command)[0]));
+            throw new RedisConnectionException(sprintf('Failed to send "%1$s" command', explode(" ", $command)[0]),
+                previous: ErrorHelper::lastErrorToRuntimeException());
         }
 
         return $this->response();
