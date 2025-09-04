@@ -14,8 +14,7 @@
   ],
   "require": {
     "php": "^8.3",
-    "charcoal-dev/contracts-storage": "dev-main",
-    "charcoal-dev/base": "^0.2.0"
+    "charcoal-dev/contracts-storage": "dev-main"
   },
   "autoload": {
     "psr-4": {
