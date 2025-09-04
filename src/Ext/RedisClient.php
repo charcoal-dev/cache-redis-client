@@ -9,8 +9,8 @@ declare(strict_types=1);
 
 namespace Charcoal\Cache\Adapters\Redis\Ext;
 
+use Charcoal\Cache\Adapters\Redis\Internal\RedisClientInterface;
 use Charcoal\Cache\Adapters\Redis\Internal\RedisClientTrait;
-use Charcoal\Contracts\Storage\Cache\CacheAdapterInterface;
 use Charcoal\Contracts\Storage\Cache\Adapter\AtomicCountersInterface;
 use Charcoal\Contracts\Storage\Cache\Adapter\ExpirableKeysInterface;
 use Charcoal\Contracts\Storage\Cache\Adapter\LocksInterface;
@@ -28,7 +28,7 @@ use Charcoal\Cache\Adapters\Redis\Exceptions\RedisOpException;
  * with caching and atomic counter standards.
  */
 final class RedisClient implements
-    CacheAdapterInterface,
+    RedisClientInterface,
     AtomicCountersInterface,
     ExpirableKeysInterface,
     LocksInterface

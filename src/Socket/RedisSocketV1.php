@@ -10,15 +10,15 @@ namespace Charcoal\Cache\Adapters\Redis\Socket;
 
 use Charcoal\Cache\Adapters\Redis\Exceptions\RedisConnectionException;
 use Charcoal\Cache\Adapters\Redis\Exceptions\RedisOpException;
+use Charcoal\Cache\Adapters\Redis\Internal\RedisClientInterface;
 use Charcoal\Cache\Adapters\Redis\Internal\Socket\RedisSocketTrait;
-use Charcoal\Contracts\Storage\Cache\CacheAdapterInterface;
 
 /**
  * Class RedisClientV1
  * A client for interacting with a Redis server, providing methods to connect,
  * execute commands, and manage data within the Redis store.
  */
-final class RedisSocketV1 implements CacheAdapterInterface
+final class RedisSocketV1 implements RedisClientInterface
 {
     use RedisSocketTrait;
 

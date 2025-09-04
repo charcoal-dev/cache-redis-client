@@ -10,6 +10,7 @@ namespace Charcoal\Cache\Adapters\Redis\Socket;
 
 use Charcoal\Cache\Adapters\Redis\Exceptions\RedisConnectionException;
 use Charcoal\Cache\Adapters\Redis\Exceptions\RedisOpException;
+use Charcoal\Cache\Adapters\Redis\Internal\RedisClientInterface;
 use Charcoal\Cache\Adapters\Redis\Internal\Socket\AtomicCountersTrait;
 use Charcoal\Cache\Adapters\Redis\Internal\Socket\ExpirableKeysTrait;
 use Charcoal\Cache\Adapters\Redis\Internal\Socket\LocksTrait;
@@ -17,7 +18,6 @@ use Charcoal\Cache\Adapters\Redis\Internal\Socket\RedisSocketTrait;
 use Charcoal\Contracts\Storage\Cache\Adapter\AtomicCountersInterface;
 use Charcoal\Contracts\Storage\Cache\Adapter\ExpirableKeysInterface;
 use Charcoal\Contracts\Storage\Cache\Adapter\LocksInterface;
-use Charcoal\Contracts\Storage\Cache\CacheAdapterInterface;
 
 /**
  * Class RedisClientV2
@@ -25,7 +25,7 @@ use Charcoal\Contracts\Storage\Cache\CacheAdapterInterface;
  * execute commands, and manage data within the Redis store.
  */
 final class RedisSocketV2 implements
-    CacheAdapterInterface,
+    RedisClientInterface,
     AtomicCountersInterface,
     ExpirableKeysInterface,
     LocksInterface
