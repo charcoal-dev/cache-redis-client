@@ -361,15 +361,4 @@ final class RedisClient implements
             throw new RedisOpException($e->getMessage(), $e->getCode(), $e);
         }
     }
-
-    /**
-     * @return void
-     * @throws RedisConnectionException
-     */
-    private function ensure(): void
-    {
-        if (!$this->isConnected()) {
-            $this->connect();
-        }
-    }
 }

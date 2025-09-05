@@ -8,7 +8,6 @@ declare(strict_types=1);
 
 namespace Charcoal\Cache\Adapters\Redis\Internal;
 
-use Charcoal\Cache\Adapters\Redis\Exceptions\RedisConnectionException;
 use Charcoal\Contracts\Storage\Cache\CacheClientInterface;
 
 /**
@@ -128,13 +127,13 @@ trait RedisClientTrait
     }
 
     /**
+     * Ensure that connection goes through the cache client, for events to work.
      * @return void
-     * @throws RedisConnectionException
      */
     protected function ensure(): void
     {
         if (!$this->isConnected()) {
-            $this->connect();
+            $this->cacheClient->connect();
         }
     }
 }
