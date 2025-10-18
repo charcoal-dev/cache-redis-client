@@ -12,7 +12,6 @@ use Charcoal\Contracts\Storage\Cache\CacheAdapterInterface;
 
 /**
  * Interface RedisClientInterface
- * @internal
  */
 interface RedisClientInterface extends CacheAdapterInterface
 {
