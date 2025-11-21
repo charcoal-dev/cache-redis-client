@@ -29,11 +29,12 @@ final readonly class SemaphoreRedis implements SemaphoreProviderInterface
      * @throws SemaphoreLockException
      */
     public function obtainLock(
-        string $lockId,
-        ?float $concurrentCheckEvery = null,
-        int    $concurrentTimeout = 0
+        string  $lockId,
+        ?float  $concurrentCheckEvery = null,
+        int     $concurrentTimeout = 0,
+        ?string $namespace = null
     ): RedisLock
     {
-        return new RedisLock($this, $lockId, $concurrentCheckEvery, $concurrentTimeout);
+        return new RedisLock($this, $lockId, $concurrentCheckEvery, $concurrentTimeout, namespace: $namespace);
     }
 }
