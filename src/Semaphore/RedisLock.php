@@ -47,17 +47,23 @@ final class RedisLock implements SemaphoreLockInterface
         public readonly ?float          $concurrentCheckEvery = null,
         public readonly int             $concurrentTimeout = 0,
         public readonly int             $ttlMs = 30000,
+        public readonly ?string         $namespace = null
     )
     {
         if (!preg_match("/^\w+$/", $lockId)) {
             throw new \InvalidArgumentException("Invalid resource identifier for semaphore lock");
         }
 
+        if (!preg_match('/^\w+$/', $this->namespace)) {
+            throw new \InvalidArgumentException("Invalid namespace for semaphore lock");
+        }
+
         if ($this->ttlMs <= 0) {
             throw new \InvalidArgumentException("Lock TTL must be > 0 ms");
         }
 
-        $this->lockKey = "sem:" . $this->lockId;
+        $namespace = $this->namespace ? $this->namespace . ":" : "";
+        $this->lockKey = "sem:" . $namespace . $this->lockId;
         $this->prevKey = $this->lockKey . ":prev";
 
         try {
@@ -201,5 +207,13 @@ final class RedisLock implements SemaphoreLockInterface
     public function lockId(): string
     {
         return $this->lockId;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function namespace(): ?string
+    {
+        return $this->namespace;
     }
 }
